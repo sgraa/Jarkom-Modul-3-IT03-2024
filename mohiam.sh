@@ -1,4 +1,3 @@
-
 interfaces="INTERFACESv4=\"eth0\"
 INTERFACESv6=\"\"
 "
