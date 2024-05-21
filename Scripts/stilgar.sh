@@ -1,4 +1,3 @@
-
 service nginx start
 
 cp /etc/nginx/sites-available/default /etc/nginx/sites-available/lb_php
@@ -12,9 +11,9 @@ echo '
     #hash $request_uri consistent;
     #least_conn;
     #ip_hash;
-    server 10.65.1.2;
-    server 10.65.1.3;
-    server 10.65.1.4;
+    server 10.65.1.2:80;
+    server 10.65.1.3:80;
+    server 10.65.1.4:80;
 }
 
  server {
@@ -22,7 +21,7 @@ echo '
         root /var/www/html;
         index index.html index.htm index.nginx-debian.html;
 
-        server_name _;
+        server_name harkonen.it03.com;
 
         location / {
                 allow 10.65.1.37;
@@ -41,6 +40,8 @@ echo '
                 proxy_set_header X-Real-IP $remote_addr;
                 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
                 proxy_set_header X-Forwarded-Proto $scheme;
+                auth_basic "Restricted Access";
+                auth_basic_user_file /etc/nginx/supersecret/.htpasswd;
         }
 } ' > /etc/nginx/sites-available/lb_php
 
@@ -50,23 +51,23 @@ if [ -f /etc/nginx/sites-enabled/default ]; then
     rm /etc/nginx/sites-enabled/default
 fi
 
-#echo 'upstream pekerja { #(round-robin(default), ip_hash, least_conn, hash $request_uri consistent)
-#    least_conn;
-#    server 10.65.2.2:8001;
-#    server 10.65.2.3:8002;
-#    server 10.65.2.4:8003;
-#}
+echo 'upstream pekerja { #(round-robin(default), ip_hash, least_conn, hash $request_uri consistent)
+    least_conn;
+    server 10.65.2.2:8001;
+    server 10.65.2.3:8002;
+    server 10.65.2.4:8003;
+}
 
-#server {
-#    listen 80;
-#    server_name atreides.it03.com;
+server {
+    listen 80;
+    server_name atreides.it03.com;
 
-#    location / {
-#        proxy_pass http://pekerja;
-#    }
-#}
-#' > /etc/nginx/sites-available/laravel-fff
+    location / {
+        proxy_pass http://pekerja;
+    }
+}
+' > /etc/nginx/sites-available/laravel-fff
 
-#ln -s /etc/nginx/sites-available/laravel-fff /etc/nginx/sites-enabled/
+ln -s /etc/nginx/sites-available/laravel-fff /etc/nginx/sites-enabled/
 
 service nginx restart
